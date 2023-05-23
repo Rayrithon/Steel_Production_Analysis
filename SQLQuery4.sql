@@ -27,26 +27,6 @@ WHERE
 COMMIT TRANSACTION
 
 
----- Now, selecting the top 20 steel producers and creating a new dataset
-
---SELECT TOP 20
---    *
---INTO 
---	top_20_prod
---FROM 
---    steel_production
---ORDER BY 
---   year_2018 DESC
-
-
--- Now, let's take a look at the steel producers table:
-
-SELECT
-	*
-FROM steel_production
-ORDER BY Country
-
-
 -- Using the function ROUND in order to round the production:
 
 BEGIN TRANSACTION
@@ -73,7 +53,7 @@ UPDATE
 SET
 	Country =
 		CASE
-			WHEN Country = 'Türkiye' THEN 'Turkey'
+			WHEN Country = 'TÃ¼rkiye' THEN 'Turkey'
 			WHEN Country = 'Taiwan, China' THEN 'Taiwan'
 			WHEN Country = 'Viet Nam' THEN 'Vietnam'
 			WHEN Country = 'United States' THEN 'USA'
@@ -85,12 +65,6 @@ SET
 
 COMMIT TRANSACTION
 
--- Now, let's take a look at the steel producers table:
-
-SELECT
-	*
-FROM steel_production
-ORDER BY Country
 
 -- Creating a new column describing the continent of each country:
 
@@ -122,20 +96,12 @@ SET Continent =
 
 COMMIT TRANSACTION
 
--- Now, let's take a look at the steel producers table, ordered by continent:
-
-SELECT
-	*
-FROM steel_production
-ORDER BY Continent, year_2018 DESC
-
-
 
 -- Now, using the table with the steel producers, let's answer some questions:
 
 -- 1 - What is the corresponding percentage of each country in the total production each year?
 -- 2 - Wich countries had the maximum and minimum production in the years 2018 to 2022?
--- 3 - What's the average production of each country from 2018 to 2022? Median and std dev as well.
+-- 3 - What's the average production of each country from 2018 to 2022? Std dev as well.
 -- 4 - What countries are among the top 20 steel producers?
 --	   4.1 - How many of them are coastal coutries? 
 --	   4.2 - Wich of these countries have iron ore deposits?
@@ -153,12 +119,12 @@ SELECT
 	SUM(year_2021) AS sum_others_2021,
 	SUM(year_2022) AS sum_others_2022
 FROM( 
-		SELECT year_2018, year_2019, year_2020, year_2021,year_2022
-		FROM steel_production
-		WHERE Country NOT IN (SELECT TOP 20
-							  Country
-							  FROM steel_production
-							  ORDER BY year_2018 DESC)) AS top_20
+	SELECT year_2018, year_2019, year_2020, year_2021,year_2022
+	FROM steel_production
+	WHERE Country NOT IN (SELECT TOP 20
+				Country
+				FROM steel_production
+				ORDER BY year_2018 DESC)) AS top_20
 
 
 -- Sum of countries that are top 20 (equivalent to ~92% of the total production)
@@ -167,9 +133,9 @@ SELECT
 	SUM(year_2018) AS sum_top_20
 FROM steel_production
 WHERE Country IN (SELECT TOP 20
-				  Country
-				  FROM steel_production
-				  ORDER BY year_2018 DESC)
+			Country
+			FROM steel_production
+			ORDER BY year_2018 DESC)
 
 
 -- Sum of the total production
@@ -269,9 +235,9 @@ WITH top_20 AS(
 	  )
 	) AS unpvt
 	WHERE Country IN (SELECT TOP 20 Country 
-					  FROM steel_production  
-					  WHERE Country <>'Others'
-					  ORDER BY year_2018 DESC))
+				FROM steel_production  
+				WHERE Country <>'Others'
+				ORDER BY year_2018 DESC))
 
 SELECT DISTINCT 
 	Country,
@@ -342,11 +308,11 @@ ORDER BY per_cap_2018 DESC
 SELECT
 	Continent,
 	COUNT(
-			CASE WHEN Continent = 'Asia' THEN 1 
-				 WHEN Continent = 'Europe' THEN 1 
-				 WHEN Continent = 'America' THEN 1 
-				 WHEN Continent = 'Oceania' THEN 1 
-				 WHEN Continent = 'Africa' THEN 1 
+		CASE WHEN Continent = 'Asia' THEN 1 
+		     WHEN Continent = 'Europe' THEN 1 
+		     WHEN Continent = 'America' THEN 1 
+		     WHEN Continent = 'Oceania' THEN 1 
+		     WHEN Continent = 'Africa' THEN 1 
 		 END) AS numb_of_prod
 FROM steel_production
 WHERE Continent <> 'Others'
@@ -354,9 +320,11 @@ GROUP BY Continent
 ORDER BY numb_of_prod DESC
 
 
---     4.6 - How does steel production relate to GDP for the countries among top 10?
+--     4.6 - How does steel production relate to GDP for the countries among top 10? 
 
---- Creating view table for GDP
+--- Creating view table for GDP. In this case, I used Pearson Correlation in order to identify if there is a relationship 
+-- between the GDP and the amount of steel production. It is importante to emphasize that this may not be the appropriate method,
+-- specially because it needs more data in order to deliver a good coeficient.
 
 CREATE VIEW avg_stdev_gdp AS
 
